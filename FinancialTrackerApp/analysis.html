@@ -25,14 +25,30 @@
             </div>
         </div>
 
-        <div class="flex items-center space-x-4 mt-3 sm:mt-0">
+        <div class="flex items-center space-x-3 mt-3 sm:mt-0">
             <a href="index.html" class="flex items-center space-x-2 text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-3 py-1.5 rounded-lg transition font-medium">
                 <i class="fa-solid fa-arrow-left text-emerald-400"></i>
-                <span>Back to Dashboard</span>
+                <span>Dashboard</span>
             </a>
-            <button onclick="exportCSV()" class="flex items-center space-x-2 text-xs bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg transition font-bold shadow-md">
+            <a href="converter.html" class="flex items-center space-x-2 text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-3 py-1.5 rounded-lg transition font-medium">
+                <i class="fa-solid fa-money-bill-transfer text-emerald-400"></i>
+                <span>Converter</span>
+            </a>
+            <button onclick="exportCSV()" class="flex items-center space-x-2 text-xs bg-emerald-600 hover:bg-emerald-500 text-white px-3 py-1.5 rounded-lg transition font-bold shadow-md">
                 <i class="fa-solid fa-download"></i>
-                <span>Download CSV File</span>
+                <span>CSV Export</span>
+            </button>
+            <div id="authNavArea">
+                <button onclick="openDevModal()" id="loginBtn" class="text-xs bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded-lg transition font-medium">
+                    <i class="fa-solid fa-code mr-1"></i> Dev
+                </button>
+                <button onclick="logoutDev()" id="logoutBtn" class="text-xs bg-rose-600/20 text-rose-400 border border-rose-500/30 hover:bg-rose-600/30 px-3 py-1.5 rounded-lg transition font-medium hidden">
+                    <i class="fa-solid fa-right-from-bracket mr-1"></i> Logout
+                </button>
+            </div>
+            <button onclick="requestAppClose()" class="text-xs bg-rose-600 hover:bg-rose-500 text-white px-3 py-1.5 rounded-lg transition font-bold shadow-md flex items-center space-x-1" title="Exit">
+                <i class="fa-solid fa-power-off"></i>
+                <span>Exit</span>
             </button>
         </div>
     </header>
@@ -62,7 +78,6 @@
 
         <!-- Charts Section -->
         <section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <!-- Growth Trend Chart -->
             <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl flex flex-col">
                 <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-400 mb-4 flex items-center">
                     <i class="fa-solid fa-chart-line text-emerald-400 mr-2"></i> Expected vs. Actual Growth Trend
@@ -72,7 +87,6 @@
                 </div>
             </div>
 
-            <!-- Profit / Loss Distribution Chart -->
             <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl flex flex-col">
                 <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-400 mb-4 flex items-center">
                     <i class="fa-solid fa-chart-column text-emerald-400 mr-2"></i> Daily Profit / Loss Variance ($)
@@ -84,28 +98,115 @@
         </section>
 
     </main>
+    <!-- Developer Portal Modal / Dashboard -->
+<div id="devPortalModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-lg w-full shadow-2xl space-y-5">
+        <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+            <h3 class="text-sm font-bold uppercase tracking-wider text-emerald-400 flex items-center">
+                <i class="fa-solid fa-code text-indigo-400 mr-2"></i> Lincovate Developer Portal
+            </h3>
+            <button onclick="closeDevPortal()" class="text-slate-400 hover:text-white transition"><i class="fa-solid fa-xmark text-lg"></i></button>
+        </div>
+        
+        <div class="space-y-3 text-xs text-slate-300">
+            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 flex justify-between items-center">
+                <div>
+                    <div class="font-bold text-white">App Environment</div>
+                    <div class="text-slate-500">Electron Build & CSV Sync Engine</div>
+                </div>
+                <span class="px-2 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 rounded-full font-mono text-[10px]">Active</span>
+            </div>
 
+            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-2">
+                <div class="font-bold text-white">Quick Actions</div>
+                <div class="flex space-x-2">
+                    <button onclick="exportCSV()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-200 py-2 rounded-lg transition font-medium">Download Backup (.csv)</button>
+                    <button onclick="clearAllDataWarning()" class="flex-1 bg-rose-600/20 hover:bg-rose-600/30 text-rose-400 border border-rose-500/30 py-2 rounded-lg transition font-medium">Reset Local Data</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex justify-end pt-2">
+            <button onclick="closeDevPortal()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 px-5 rounded-xl text-xs transition">Close Portal</button>
+        </div>
+    </div>
+</div>
+
+    <!-- Footer -->
     <footer style="color: azure; font-family: 'Times New Roman', Times, serif; font-size: 0.875rem; text-align: center; padding: 1rem; text-align: end;">Created with love by <a href="https://www.lincovate.com" style="text-decoration: none; color:aqua;" onmouseover='this.style.color="red"'; onmouseout='this.style.color="aqua"'; target="_blank" rel="noopener noreferrer">Lincovate Technologies</a></footer>
+
+    <!-- Developer Authentication Modal -->
+    <div id="devModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-sm w-full shadow-2xl space-y-4">
+            <h3 class="text-sm font-bold uppercase text-slate-300 flex items-center">
+                <i class="fa-solid fa-lock text-indigo-400 mr-2"></i> Developer Authentication
+            </h3>
+            <p class="text-xs text-slate-400">Enter developer credentials to access internal configurations.</p>
+            <input type="text" id="devUser" placeholder="Username" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500">
+            <input type="password" id="devPass" placeholder="Password" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500">
+            <div class="flex space-x-2">
+                <button onclick="verifyDevLogin()" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 rounded-xl text-xs transition">Login</button>
+                <button onclick="closeDevModal()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-2 rounded-xl text-xs transition">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Smart Exit Notification Modal -->
+    <div id="exitModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-sm w-full shadow-2xl text-center space-y-4">
+            <div class="w-12 h-12 rounded-full bg-emerald-500/10 text-emerald-400 flex items-center justify-center mx-auto text-xl border border-emerald-500/20">
+                <i class="fa-solid fa-circle-question animate-pulse" id="exitSpinner"></i>
+            </div>
+            <h3 id="exitTitle" class="text-sm font-bold text-white uppercase tracking-wider">Confirm Exit</h3>
+            <p id="exitMessage" class="text-xs text-slate-400">Do you want to close Githua Tracker?</p>
+            <div id="exitButtons" class="flex space-x-2 pt-2">
+                <button onclick="confirmExit()" class="flex-1 bg-rose-600 hover:bg-rose-500 text-white font-bold py-2 rounded-xl text-xs transition">Yes, Close</button>
+                <button onclick="closeExitModal()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-2 rounded-xl text-xs transition">Cancel</button>
+            </div>
+        </div>
+    </div>
 
     <!-- Analysis Logic Script -->
     <script>
+        let isElectron = false;
+        let ipcRenderer = null;
+        try {
+            const electron = require('electron');
+            ipcRenderer = electron.ipcRenderer;
+            isElectron = true;
+        } catch (e) {
+            console.log("Running in browser mode.");
+        }
+
         let logs = [];
         let settings = { interestRate: 1.0, startingPrincipal: 1000 };
 
         window.addEventListener('DOMContentLoaded', () => {
+            if (localStorage.getItem('fintrack_dev_auth') === 'true') {
+                document.getElementById('loginBtn').classList.add('hidden');
+                document.getElementById('logoutBtn').classList.remove('hidden');
+            }
             loadAnalysisData();
         });
 
         function loadAnalysisData() {
-            // Checks for Electron IPC or falls back to localStorage
-            const savedLogs = localStorage.getItem('fintrack_logs');
-            const savedSettings = localStorage.getItem('fintrack_settings');
-            
-            if (savedLogs) logs = JSON.parse(savedLogs);
-            if (savedSettings) settings = JSON.parse(savedSettings);
-
-            renderReportCards();
-            renderCharts();
+            if (isElectron && ipcRenderer) {
+                ipcRenderer.invoke('load-data').then(data => {
+                    if (data) {
+                        logs = data.logs || [];
+                        if (data.settings) settings = data.settings;
+                    }
+                    renderReportCards();
+                    renderCharts();
+                });
+            } else {
+                const savedLogs = localStorage.getItem('fintrack_logs');
+                const savedSettings = localStorage.getItem('fintrack_settings');
+                if (savedLogs) logs = JSON.parse(savedLogs);
+                if (savedSettings) settings = JSON.parse(savedSettings);
+                renderReportCards();
+                renderCharts();
+            }
         }
 
         function renderReportCards() {
@@ -133,14 +234,12 @@
         let varianceChartInstance = null;
 
         function renderCharts() {
-            // Sort logs chronologically
             const sortedLogs = [...logs].sort((a, b) => new Date(a.date) - new Date(b.date));
             const labels = sortedLogs.map(l => l.date);
             const expectedData = sortedLogs.map(l => l.expected);
             const currentData = sortedLogs.map(l => l.current);
             const varianceData = sortedLogs.map(l => l.current - l.expected);
 
-            // 1. Growth Trend Chart
             const ctxGrowth = document.getElementById('growthChart').getContext('2d');
             if (growthChartInstance) growthChartInstance.destroy();
 
@@ -149,38 +248,17 @@
                 data: {
                     labels: labels,
                     datasets: [
-                        {
-                            label: 'Expected ($)',
-                            data: expectedData,
-                            borderColor: '#38bdf8',
-                            backgroundColor: 'rgba(56, 189, 248, 0.1)',
-                            borderWidth: 2,
-                            fill: true,
-                            tension: 0.2
-                        },
-                        {
-                            label: 'Actual Current ($)',
-                            data: currentData,
-                            borderColor: '#34d399',
-                            backgroundColor: 'rgba(52, 211, 153, 0.1)',
-                            borderWidth: 2,
-                            fill: true,
-                            tension: 0.2
-                        }
+                        { label: 'Expected ($)', data: expectedData, borderColor: '#38bdf8', backgroundColor: 'rgba(56, 189, 248, 0.1)', borderWidth: 2, fill: true, tension: 0.2 },
+                        { label: 'Actual Current ($)', data: currentData, borderColor: '#34d399', backgroundColor: 'rgba(52, 211, 153, 0.1)', borderWidth: 2, fill: true, tension: 0.2 }
                     ]
                 },
                 options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
+                    responsive: true, maintainAspectRatio: false,
                     plugins: { legend: { labels: { color: '#94a3b8', font: { family: 'monospace' } } } },
-                    scales: {
-                        x: { ticks: { color: '#64748b' }, grid: { color: '#1e293b' } },
-                        y: { ticks: { color: '#64748b' }, grid: { color: '#1e293b' } }
-                    }
+                    scales: { x: { ticks: { color: '#64748b' }, grid: { color: '#1e293b' } }, y: { ticks: { color: '#64748b' }, grid: { color: '#1e293b' } } }
                 }
             });
 
-            // 2. Variance Bar Chart
             const ctxVariance = document.getElementById('varianceChart').getContext('2d');
             if (varianceChartInstance) varianceChartInstance.destroy();
 
@@ -188,21 +266,12 @@
                 type: 'bar',
                 data: {
                     labels: labels,
-                    datasets: [{
-                        label: 'P&L Variance ($)',
-                        data: varianceData,
-                        backgroundColor: varianceData.map(v => v >= 0 ? 'rgba(52, 211, 153, 0.8)' : 'rgba(244, 63, 94, 0.8)'),
-                        borderRadius: 6
-                    }]
+                    datasets: [{ label: 'P&L Variance ($)', data: varianceData, backgroundColor: varianceData.map(v => v >= 0 ? 'rgba(52, 211, 153, 0.8)' : 'rgba(244, 63, 94, 0.8)'), borderRadius: 6 }]
                 },
                 options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
+                    responsive: true, maintainAspectRatio: false,
                     plugins: { legend: { display: false } },
-                    scales: {
-                        x: { ticks: { color: '#64748b' }, grid: { color: '#1e293b' } },
-                        y: { ticks: { color: '#64748b' }, grid: { color: '#1e293b' } }
-                    }
+                    scales: { x: { ticks: { color: '#64748b' }, grid: { color: '#1e293b' } }, y: { ticks: { color: '#64748b' }, grid: { color: '#1e293b' } } }
                 }
             });
         }
@@ -227,6 +296,65 @@
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
+        }
+
+        function openDevModal() { document.getElementById('devModal').classList.remove('hidden'); }
+        function closeDevModal() { document.getElementById('devModal').classList.add('hidden'); }
+
+         function verifyDevLogin() {
+        const u = document.getElementById('devUser').value;
+        const p = document.getElementById('devPass').value;
+        
+        if (u === "admin" && p === "lincovate2026") {
+            localStorage.setItem('fintrack_dev_auth', 'true');
+            document.getElementById('loginBtn').classList.add('hidden');
+            document.getElementById('logoutBtn').classList.remove('hidden');
+            closeDevModal();
+            
+            // COMMAND ELECTRON TO OPEN THE DEVELOPER CONSOLE
+            if (isElectron && ipcRenderer) {
+                ipcRenderer.send('toggle-dev-tools');
+            } else {
+                alert("Developer authentication successful! (Note: DevTools console toggle requires running inside the Electron desktop app).");
+            }
+        } else {
+            alert("Invalid credentials!");
+        }
+    }
+
+    function closeDevPortal() {
+        document.getElementById('devPortalModal').classList.add('hidden');
+    }
+
+    function clearAllDataWarning() {
+        if (confirm("Are you sure you want to wipe all logs? This cannot be undone.")) {
+            logs = [];
+            saveDataToStorage();
+            initApp();
+            alert("All local data has been reset.");
+            closeDevPortal();
+        }
+    }
+
+        function logoutDev() {
+            localStorage.removeItem('fintrack_dev_auth');
+            document.getElementById('loginBtn').classList.remove('hidden');
+            document.getElementById('logoutBtn').classList.add('hidden');
+            alert("Logged out successfully.");
+        }
+
+        function requestAppClose() {
+            document.getElementById('exitModal').classList.remove('hidden');
+        }
+        function closeExitModal() {
+            document.getElementById('exitModal').classList.add('hidden');
+        }
+        function confirmExit() {
+            if (isElectron && ipcRenderer) {
+                ipcRenderer.send('app-quit');
+            } else {
+                window.close();
+            }
         }
     </script>
 </body>

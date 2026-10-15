@@ -31,21 +31,39 @@
         </div>
 
         <!-- Navigation and Status -->
-        <div class="flex items-center space-x-4 mt-3 sm:mt-0">
-            <!-- Link to Second Page (Analysis) -->
+        <div class="flex items-center space-x-3 mt-3 sm:mt-0">
             <a href="analysis.html" class="flex items-center space-x-2 text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-3 py-1.5 rounded-lg transition font-medium">
                 <i class="fa-solid fa-chart-pie text-emerald-400"></i>
-                <span>Analysis Page</span>
+                <span>Analysis</span>
             </a>
+            <a href="converter.html" class="flex items-center space-x-2 text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-3 py-1.5 rounded-lg transition font-medium">
+                <i class="fa-solid fa-money-bill-transfer text-emerald-400"></i>
+                <span>Converter</span>
+            </a>
+            <button onclick="triggerRefresh()" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-lg transition" title="Refresh Data">
+                <i class="fa-solid fa-rotate"></i>
+            </button>
+            <div id="authNavArea">
+                <button onclick="openDevModal()" id="loginBtn" class="text-xs bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded-lg transition font-medium">
+                    <i class="fa-solid fa-code mr-1"></i> Dev Portal
+                </button>
+                <button onclick="logoutDev()" id="logoutBtn" class="text-xs bg-rose-600/20 text-rose-400 border border-rose-500/30 hover:bg-rose-600/30 px-3 py-1.5 rounded-lg transition font-medium hidden">
+                    <i class="fa-solid fa-right-from-bracket mr-1"></i> Logout
+                </button>
+            </div>
+            <button onclick="requestAppClose()" class="text-xs bg-rose-600 hover:bg-rose-500 text-white px-3.5 py-1.5 rounded-lg transition font-bold shadow-md flex items-center space-x-1.5" title="Close Application">
+                <i class="fa-solid fa-power-off"></i>
+                <span>Exit</span>
+            </button>
 
             <!-- Sync Status Badge -->
-            <div id="syncStatus" class="flex items-center space-x-2 text-xs bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 px-3 py-1.5 rounded-lg">
+            <div id="syncStatus" class="hidden sm:flex items-center space-x-2 text-xs bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 px-3 py-1.5 rounded-lg ml-2">
                 <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-                <span>Auto-Saving to data.csv</span>
+                <span>Auto-Saving</span>
             </div>
-            <div class="text-right">
-                <div id="liveClock" class="text-sm font-semibold text-emerald-400 font-mono"></div>
-                <div class="text-xs text-slate-500">Local System Time</div>
+            <div class="text-right hidden md:block ml-2">
+                <div id="liveClock" class="text-xs font-semibold text-emerald-400 font-mono"></div>
+                <div class="text-[10px] text-slate-500">Local Time</div>
             </div>
         </div>
     </header>
@@ -53,14 +71,14 @@
     <!-- Main Workspace -->
     <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 grid grid-cols-1 lg:grid-cols-3 gap-6">
 
-        <!-- Left & Center Columns: Tracker, Calendar, Table & Charts -->
+        <!-- Left & Center Columns: Tracker, Calendar, Table -->
         <div class="lg:col-span-2 space-y-6">
 
             <!-- Control Bar / Settings Card -->
             <section class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl">
                 <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-400 mb-4 flex items-center justify-between">
                     <span><i class="fa-solid fa-sliders text-emerald-400 mr-2"></i> Compound Growth Parameters</span>
-                    <span class="text-xs text-slate-500 font-normal">Base settings per day</span>
+                    <span class="text-xs text-slate-500 font-normal">Custom Start Date & Rate</span>
                 </h2>
                 <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
                     <div>
@@ -74,12 +92,16 @@
                         <label class="block text-xs font-medium text-slate-400 mb-1">Starting Principal ($)</label>
                         <input type="number" id="startingPrincipalInput" value="1000" step="10" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white font-mono text-sm focus:outline-none focus:border-emerald-500">
                     </div>
-                    <div class="flex items-end">
-                        <button onclick="applySettings()" class="w-full bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold py-2 px-4 rounded-xl text-sm transition shadow-lg shadow-emerald-500/20 flex items-center justify-center space-x-2">
-                            <i class="fa-solid fa-rotate"></i>
-                            <span>Update Target Chain</span>
-                        </button>
+                    <div>
+                        <label class="block text-xs font-medium text-slate-400 mb-1">Compound Start Date</label>
+                        <input type="date" id="startDateInput" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white text-sm focus:outline-none focus:border-emerald-500">
                     </div>
+                </div>
+                <div class="mt-4 flex justify-end">
+                    <button onclick="applySettings()" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold py-2 px-6 rounded-xl text-sm transition shadow-lg shadow-emerald-500/20 flex items-center space-x-2">
+                        <i class="fa-solid fa-rotate"></i>
+                        <span>Update Target Chain</span>
+                    </button>
                 </div>
             </section>
 
@@ -159,10 +181,10 @@
             </section>
         </div>
 
-        <!-- Right Column: Compound Interest Verification Calculator & Currency Converter -->
+        <!-- Right Column: Compound Interest Verification Calculator & KPIs -->
         <div class="space-y-6">
 
-            <!-- Dedicated Compound Interest Calculator (Verification Tool) -->
+            <!-- Dedicated Compound Interest Calculator -->
             <section class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl">
                 <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-400 mb-4 flex items-center">
                     <i class="fa-solid fa-calculator text-emerald-400 mr-2"></i> Compound Growth Calculator
@@ -192,27 +214,6 @@
                 </div>
             </section>
 
-            <!-- USD to KES Live Currency Converter -->
-            <section class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl">
-                <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-400 mb-4 flex items-center">
-                    <i class="fa-solid fa-money-bill-transfer text-emerald-400 mr-2"></i> USD to KES Converter
-                </h2>
-                <div class="space-y-4">
-                    <div>
-                        <label class="block text-xs font-medium text-slate-400 mb-1">Exchange Rate (1 USD to KES)</label>
-                        <input type="number" id="exchangeRate" value="130.0" step="0.5" oninput="convertCurrency()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white font-mono text-sm focus:outline-none focus:border-emerald-500">
-                    </div>
-                    <div>
-                        <label class="block text-xs font-medium text-slate-400 mb-1">Amount in USD ($)</label>
-                        <input type="number" id="usdInput" value="100" step="1" oninput="convertCurrency()" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white font-mono text-sm focus:outline-none focus:border-emerald-500">
-                    </div>
-                    <div class="bg-slate-950 p-4 rounded-xl border border-slate-800 text-center">
-                        <div class="text-xs text-slate-400 mb-1">Equivalent in Kenyan Shillings:</div>
-                        <div id="kesOutput" class="text-xl font-bold text-emerald-400 font-mono">KES 13,000.00</div>
-                    </div>
-                </div>
-            </section>
-
             <!-- Summary KPI Card -->
             <section class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl space-y-4">
                 <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-400 flex items-center">
@@ -231,7 +232,73 @@
             </section>
         </div>
     </main>
-    <footer style="color: azure; font-family: 'Times New Roman', Times, serif; font-size: 0.875rem; text-align: center; padding: 1rem; text-align: end;">Created with love by <a href="https://www.lincovate.com" style="text-decoration: none; color:aqua;" onmouseover='this.style.color="red"'; onmouseout='this.style.color="aqua"';  target="_blank" rel="noopener noreferrer">Lincovate Technologies</a> </footer>
+
+    <!-- Footer -->
+    <footer style="color: azure; font-family: 'Times New Roman', Times, serif; font-size: 0.875rem; text-align: center; padding: 1rem; text-align: end;">Created with love by <a href="https://www.lincovate.com" style="text-decoration: none; color:aqua;" onmouseover='this.style.color="red"'; onmouseout='this.style.color="aqua"'; target="_blank" rel="noopener noreferrer">Lincovate Technologies</a></footer>
+
+    <!-- Developer Authentication Modal -->
+    <div id="devModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-sm w-full shadow-2xl space-y-4">
+            <h3 class="text-sm font-bold uppercase text-slate-300 flex items-center">
+                <i class="fa-solid fa-lock text-indigo-400 mr-2"></i> Developer Authentication
+            </h3>
+            <p class="text-xs text-slate-400">Enter developer credentials to access internal configurations.</p>
+            <input type="text" id="devUser" placeholder="Username" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500">
+            <input type="password" id="devPass" placeholder="Password" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-sm text-white focus:outline-none focus:border-indigo-500">
+            <div class="flex space-x-2">
+                <button onclick="verifyDevLogin()" class="flex-1 bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 rounded-xl text-xs transition">Login</button>
+                <button onclick="closeDevModal()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-2 rounded-xl text-xs transition">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Smart Exit Notification Modal -->
+    <div id="exitModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-sm w-full shadow-2xl text-center space-y-4">
+            <div class="w-12 h-12 rounded-full bg-emerald-500/10 text-emerald-400 flex items-center justify-center mx-auto text-xl border border-emerald-500/20">
+                <i class="fa-solid fa-circle-question animate-pulse" id="exitSpinner"></i>
+            </div>
+            <h3 id="exitTitle" class="text-sm font-bold text-white uppercase tracking-wider">Confirm Exit</h3>
+            <p id="exitMessage" class="text-xs text-slate-400">Do you want to close Githua Tracker?</p>
+            <div id="exitButtons" class="flex space-x-2 pt-2">
+                <button onclick="confirmExit()" class="flex-1 bg-rose-600 hover:bg-rose-500 text-white font-bold py-2 rounded-xl text-xs transition">Yes, Close</button>
+                <button onclick="closeExitModal()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 font-bold py-2 rounded-xl text-xs transition">Cancel</button>
+            </div>
+        </div>
+    </div>
+    <!-- Developer Portal Modal / Dashboard -->
+<div id="devPortalModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-sm hidden flex items-center justify-center p-4 z-50">
+    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 max-w-lg w-full shadow-2xl space-y-5">
+        <div class="flex justify-between items-center border-b border-slate-800 pb-3">
+            <h3 class="text-sm font-bold uppercase tracking-wider text-emerald-400 flex items-center">
+                <i class="fa-solid fa-code text-indigo-400 mr-2"></i> Lincovate Developer Portal
+            </h3>
+            <button onclick="closeDevPortal()" class="text-slate-400 hover:text-white transition"><i class="fa-solid fa-xmark text-lg"></i></button>
+        </div>
+        
+        <div class="space-y-3 text-xs text-slate-300">
+            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 flex justify-between items-center">
+                <div>
+                    <div class="font-bold text-white">App Environment</div>
+                    <div class="text-slate-500">Electron Build & CSV Sync Engine</div>
+                </div>
+                <span class="px-2 py-1 bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 rounded-full font-mono text-[10px]">Active</span>
+            </div>
+
+            <div class="bg-slate-950 p-3 rounded-xl border border-slate-800 space-y-2">
+                <div class="font-bold text-white">Quick Actions</div>
+                <div class="flex space-x-2">
+                    <button onclick="exportCSV()" class="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-200 py-2 rounded-lg transition font-medium">Download Backup (.csv)</button>
+                    <button onclick="clearAllDataWarning()" class="flex-1 bg-rose-600/20 hover:bg-rose-600/30 text-rose-400 border border-rose-500/30 py-2 rounded-lg transition font-medium">Reset Local Data</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex justify-end pt-2">
+            <button onclick="closeDevPortal()" class="bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-2 px-5 rounded-xl text-xs transition">Close Portal</button>
+        </div>
+    </div>
+</div>
 
     <!-- App JavaScript Logic -->
     <script>
@@ -251,15 +318,23 @@
 
         let logs = [];
         let settings = {
-            interestRate: 1.0, // Default daily rate percentage
-            startingPrincipal: 1000
+            interestRate: 1.0,
+            startingPrincipal: 1000,
+            startDate: new Date().toISOString().split('T')[0]
         };
 
         let currentCalendarDate = new Date();
+        let isUpdating = false; // Flag tracking background syncing/updates
 
         window.addEventListener('DOMContentLoaded', () => {
             const todayStr = new Date().toISOString().split('T')[0];
             document.getElementById('logDate').value = todayStr;
+            
+            if (localStorage.getItem('fintrack_dev_auth') === 'true') {
+                document.getElementById('loginBtn').classList.add('hidden');
+                document.getElementById('logoutBtn').classList.remove('hidden');
+            }
+
             loadDataFromStorage();
         });
 
@@ -282,9 +357,11 @@
         }
 
         function saveDataToStorage() {
+            isUpdating = true; // Mark busy during save operations
             const payload = { logs, settings };
             if (isElectron && ipcRenderer) {
                 ipcRenderer.invoke('save-data', payload).then(success => {
+                    isUpdating = false;
                     if (success) {
                         document.getElementById('syncStatus').innerHTML = '<span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span><span>Saved to data.csv</span>';
                     }
@@ -292,21 +369,23 @@
             } else {
                 localStorage.setItem('fintrack_logs', JSON.stringify(logs));
                 localStorage.setItem('fintrack_settings', JSON.stringify(settings));
+                isUpdating = false;
             }
         }
 
         function initApp() {
             document.getElementById('interestRateInput').value = settings.interestRate;
             document.getElementById('startingPrincipalInput').value = settings.startingPrincipal;
+            document.getElementById('startDateInput').value = settings.startDate || new Date().toISOString().split('T')[0];
             renderTable();
             renderCalendar();
             updateKPIs();
-            convertCurrency();
         }
 
         function applySettings() {
             settings.interestRate = parseFloat(document.getElementById('interestRateInput').value) || 1.0;
             settings.startingPrincipal = parseFloat(document.getElementById('startingPrincipalInput').value) || 1000;
+            settings.startDate = document.getElementById('startDateInput').value || new Date().toISOString().split('T')[0];
             saveDataToStorage();
             renderTable();
             renderCalendar();
@@ -397,23 +476,28 @@
             const firstDayIndex = new Date(year, month, 1).getDay();
             const totalDays = new Date(year, month + 1, 0).getDate();
 
-            // PURE DAILY COMPOUND MULTIPLIER (e.g., 1% = 1.01)
             const dailyMultiplier = 1 + (settings.interestRate / 100);
+            const startDateObj = new Date(settings.startDate || `${year}-${String(month + 1).padStart(2, '0')}-01`);
 
-            // Empty slots for previous month padding
             for (let i = 0; i < firstDayIndex; i++) {
                 const emptyCell = document.createElement('div');
                 emptyCell.className = "h-20 bg-slate-950/30 rounded-xl border border-slate-900 opacity-30";
                 grid.appendChild(emptyCell);
             }
 
-            // Loop through each day of the month and calculate expected target using formula: Principal * (1 + rate)^(day - 1)
             for (let day = 1; day <= totalDays; day++) {
+                const currentDateObj = new Date(year, month, day);
                 const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
                 const existingLog = logs.find(l => l.date === dateStr);
                 
-                // Correct day-by-day compounding expectation formula
-                const expectedTargetForDay = settings.startingPrincipal * Math.pow(dailyMultiplier, day - 1);
+                // Calculate precise offset from custom start date
+                const timeDiff = currentDateObj - startDateObj;
+                const dayOffset = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+
+                let expectedTargetForDay = settings.startingPrincipal;
+                if (dayOffset > 0) {
+                    expectedTargetForDay = settings.startingPrincipal * Math.pow(dailyMultiplier, dayOffset);
+                }
 
                 const cell = document.createElement('div');
                 cell.className = "h-24 bg-slate-950 border border-slate-800/80 rounded-xl p-2 flex flex-col justify-between hover:border-emerald-500/50 transition cursor-pointer relative overflow-hidden group";
@@ -474,11 +558,114 @@
             document.getElementById('calcResultBox').classList.remove('hidden');
         }
 
-        function convertCurrency() {
-            const rate = parseFloat(document.getElementById('exchangeRate').value) || 130;
-            const usd = parseFloat(document.getElementById('usdInput').value) || 0;
-            const kes = usd * rate;
-            document.getElementById('kesOutput').innerText = 'KES ' + kes.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+        // Developer Portal Authentication Handlers
+        function triggerRefresh() {
+            loadDataFromStorage();
+            alert("Data refreshed successfully!");
+        }
+
+        function openDevModal() { document.getElementById('devModal').classList.remove('hidden'); }
+        function closeDevModal() { document.getElementById('devModal').classList.add('hidden'); }
+
+        function verifyDevLogin() {
+        const u = document.getElementById('devUser').value;
+        const p = document.getElementById('devPass').value;
+        
+        if (u === "admin" && p === "lincovate2026") {
+            localStorage.setItem('fintrack_dev_auth', 'true');
+            document.getElementById('loginBtn').classList.add('hidden');
+            document.getElementById('logoutBtn').classList.remove('hidden');
+            closeDevModal();
+            
+            // COMMAND ELECTRON TO OPEN THE DEVELOPER CONSOLE
+            if (isElectron && ipcRenderer) {
+                ipcRenderer.send('toggle-dev-tools');
+            } else {
+                alert("Developer authentication successful! (Note: DevTools console toggle requires running inside the Electron desktop app).");
+            }
+        } else {
+            alert("Invalid credentials!");
+        }
+    }
+
+    function closeDevPortal() {
+        document.getElementById('devPortalModal').classList.add('hidden');
+    }
+
+    function clearAllDataWarning() {
+        if (confirm("Are you sure you want to wipe all logs? This cannot be undone.")) {
+            logs = [];
+            saveDataToStorage();
+            initApp();
+            alert("All local data has been reset.");
+            closeDevPortal();
+        }
+    }
+
+        function logoutDev() {
+            localStorage.removeItem('fintrack_dev_auth');
+            document.getElementById('loginBtn').classList.remove('hidden');
+            document.getElementById('logoutBtn').classList.add('hidden');
+            alert("Logged out of Developer Portal successfully.");
+        }
+
+        // Smart Exit Flow
+        function requestAppClose() {
+            const modal = document.getElementById('exitModal');
+            const title = document.getElementById('exitTitle');
+            const message = document.getElementById('exitMessage');
+            const buttons = document.getElementById('exitButtons');
+            const spinner = document.getElementById('exitSpinner');
+
+            modal.classList.remove('hidden');
+
+            if (isUpdating) {
+                title.innerText = "Update/Sync in Progress";
+                message.innerText = "Please let the update finish. The app will automatically close once complete.";
+                spinner.className = "fa-solid fa-spinner fa-spin text-emerald-400";
+                buttons.classList.add('hidden');
+                
+                const checkInterval = setInterval(() => {
+                    if (!isUpdating) {
+                        clearInterval(checkInterval);
+                        executeAppShutdown();
+                    }
+                }, 500);
+            } else {
+                title.innerText = "Confirm Exit";
+                message.innerText = "Do you want to close Githua Tracker?";
+                spinner.className = "fa-solid fa-circle-question text-emerald-400";
+                buttons.classList.remove('hidden');
+            }
+        }
+
+        function closeExitModal() {
+            document.getElementById('exitModal').classList.add('hidden');
+        }
+
+        function confirmExit() {
+            const title = document.getElementById('exitTitle');
+            const message = document.getElementById('exitMessage');
+            const spinner = document.getElementById('exitSpinner');
+            const buttons = document.getElementById('exitButtons');
+
+            title.innerText = "Exiting Application";
+            message.innerText = "Thanks for using FinApp!";
+            spinner.className = "fa-solid fa-check text-emerald-400";
+            buttons.classList.add('hidden');
+
+            setTimeout(() => {
+                executeAppShutdown();
+            }, 1200);
+        }
+
+        function executeAppShutdown() {
+            if (isElectron && ipcRenderer) {
+                ipcRenderer.send('app-quit');
+            } else {
+                window.close();
+                document.body.innerHTML = '<div style="background:#020617;color:#34d399;height:100vh;display:flex;align-items:center;justify-content:center;font-family:sans-serif;font-size:1.25rem;">Thanks for using FinApp. You can now close this window safely.</div>';
+            }
         }
     </script>
 </body>
