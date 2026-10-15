@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Performance Analysis & Reports - Githua Tracker</title>
+    <meta name="author" content="JOSIAH MWANGI">
+    <meta name="company" content="LINCOVATE TECHNOLOGIES">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="icon" href="cash.ico" type="image/x-icon">
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans selection:bg-emerald-500 selection:text-slate-950">
+
+    <!-- Top Header -->
+    <header class="bg-slate-900 border-b border-slate-800 px-6 py-4 flex flex-wrap justify-between items-center shadow-md">
+        <div class="flex items-center space-x-3">
+            <div class="bg-emerald-500 text-slate-950 p-2.5 rounded-xl font-black text-xl shadow-lg shadow-emerald-500/20">
+                <i class="fa-solid fa-chart-pie"></i>
+            </div>
+            <div>
+                <h1 class="text-xl font-bold tracking-tight text-white">Githua Tracker <span class="text-xs px-2 py-0.5 bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 rounded-full ml-2">Analysis Hub</span></h1>
+                <p class="text-xs text-slate-400">Performance Metrics, Charts & Data Export</p>
+            </div>
+        </div>
+
+        <div class="flex items-center space-x-4 mt-3 sm:mt-0">
+            <a href="index.html" class="flex items-center space-x-2 text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-3 py-1.5 rounded-lg transition font-medium">
+                <i class="fa-solid fa-arrow-left text-emerald-400"></i>
+                <span>Back to Dashboard</span>
+            </a>
+            <button onclick="exportCSV()" class="flex items-center space-x-2 text-xs bg-emerald-600 hover:bg-emerald-500 text-white px-4 py-2 rounded-lg transition font-bold shadow-md">
+                <i class="fa-solid fa-download"></i>
+                <span>Download CSV File</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- Main Workspace -->
+    <main class="flex-1 max-w-7xl w-full mx-auto p-4 sm:p-6 space-y-6">
+
+        <!-- Monthly Report Summary Cards -->
+        <section class="grid grid-cols-1 sm:grid-cols-4 gap-4">
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl">
+                <div class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Total Logs Recorded</div>
+                <div id="reportTotalLogs" class="text-2xl font-black text-white font-mono">0</div>
+            </div>
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl">
+                <div class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Net P&L (Overall)</div>
+                <div id="reportNetPL" class="text-2xl font-black text-emerald-400 font-mono">$0.00</div>
+            </div>
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl">
+                <div class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Targets Met Rate</div>
+                <div id="reportSuccessRate" class="text-2xl font-black text-emerald-400 font-mono">0%</div>
+            </div>
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl">
+                <div class="text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1">Starting Principal</div>
+                <div id="reportPrincipal" class="text-2xl font-black text-slate-300 font-mono">$1,000</div>
+            </div>
+        </section>
+
+        <!-- Charts Section -->
+        <section class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <!-- Growth Trend Chart -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl flex flex-col">
+                <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-400 mb-4 flex items-center">
+                    <i class="fa-solid fa-chart-line text-emerald-400 mr-2"></i> Expected vs. Actual Growth Trend
+                </h2>
+                <div class="flex-1 relative min-h-[300px]">
+                    <canvas id="growthChart"></canvas>
+                </div>
+            </div>
+
+            <!-- Profit / Loss Distribution Chart -->
+            <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 shadow-xl flex flex-col">
+                <h2 class="text-sm font-semibold uppercase tracking-wider text-slate-400 mb-4 flex items-center">
+                    <i class="fa-solid fa-chart-column text-emerald-400 mr-2"></i> Daily Profit / Loss Variance ($)
+                </h2>
+                <div class="flex-1 relative min-h-[300px]">
+                    <canvas id="varianceChart"></canvas>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <footer style="color: azure; font-family: 'Times New Roman', Times, serif; font-size: 0.875rem; text-align: center; padding: 1rem; text-align: end;">Created with love by <a href="https://www.lincovate.com" style="text-decoration: none; color:aqua;" onmouseover='this.style.color="red"'; onmouseout='this.style.color="aqua"'; target="_blank" rel="noopener noreferrer">Lincovate Technologies</a></footer>
+
+    <!-- Analysis Logic Script -->
+    <script>
+        let logs = [];
+        let settings = { interestRate: 1.0, startingPrincipal: 1000 };
+
+        window.addEventListener('DOMContentLoaded', () => {
+            loadAnalysisData();
+        });
+
+        function loadAnalysisData() {
+            // Checks for Electron IPC or falls back to localStorage
+            const savedLogs = localStorage.getItem('fintrack_logs');
+            const savedSettings = localStorage.getItem('fintrack_settings');
+            
+            if (savedLogs) logs = JSON.parse(savedLogs);
+            if (savedSettings) settings = JSON.parse(savedSettings);
+
+            renderReportCards();
+            renderCharts();
+        }
+
+        function renderReportCards() {
+            document.getElementById('reportTotalLogs').innerText = logs.length;
+            document.getElementById('reportPrincipal').innerText = '$' + (settings.startingPrincipal || 1000).toLocaleString();
+
+            let netPL = 0;
+            let successCount = 0;
+
+            logs.forEach(l => {
+                const diff = l.current - l.expected;
+                netPL += diff;
+                if (diff >= 0) successCount++;
+            });
+
+            const netPLEl = document.getElementById('reportNetPL');
+            netPLEl.innerText = (netPL >= 0 ? '+' : '') + '$' + netPL.toFixed(2);
+            netPLEl.className = `text-2xl font-black font-mono ${netPL >= 0 ? 'text-emerald-400' : 'text-rose-400'}`;
+
+            const successRate = logs.length > 0 ? ((successCount / logs.length) * 100).toFixed(1) : 0;
+            document.getElementById('reportSuccessRate').innerText = successRate + '%';
+        }
+
+        let growthChartInstance = null;
+        let varianceChartInstance = null;
+
+        function renderCharts() {
+            // Sort logs chronologically
+            const sortedLogs = [...logs].sort((a, b) => new Date(a.date) - new Date(b.date));
+            const labels = sortedLogs.map(l => l.date);
+            const expectedData = sortedLogs.map(l => l.expected);
+            const currentData = sortedLogs.map(l => l.current);
+            const varianceData = sortedLogs.map(l => l.current - l.expected);
+
+            // 1. Growth Trend Chart
+            const ctxGrowth = document.getElementById('growthChart').getContext('2d');
+            if (growthChartInstance) growthChartInstance.destroy();
+
+            growthChartInstance = new Chart(ctxGrowth, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Expected ($)',
+                            data: expectedData,
+                            borderColor: '#38bdf8',
+                            backgroundColor: 'rgba(56, 189, 248, 0.1)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.2
+                        },
+                        {
+                            label: 'Actual Current ($)',
+                            data: currentData,
+                            borderColor: '#34d399',
+                            backgroundColor: 'rgba(52, 211, 153, 0.1)',
+                            borderWidth: 2,
+                            fill: true,
+                            tension: 0.2
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { labels: { color: '#94a3b8', font: { family: 'monospace' } } } },
+                    scales: {
+                        x: { ticks: { color: '#64748b' }, grid: { color: '#1e293b' } },
+                        y: { ticks: { color: '#64748b' }, grid: { color: '#1e293b' } }
+                    }
+                }
+            });
+
+            // 2. Variance Bar Chart
+            const ctxVariance = document.getElementById('varianceChart').getContext('2d');
+            if (varianceChartInstance) varianceChartInstance.destroy();
+
+            varianceChartInstance = new Chart(ctxVariance, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'P&L Variance ($)',
+                        data: varianceData,
+                        backgroundColor: varianceData.map(v => v >= 0 ? 'rgba(52, 211, 153, 0.8)' : 'rgba(244, 63, 94, 0.8)'),
+                        borderRadius: 6
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { display: false } },
+                    scales: {
+                        x: { ticks: { color: '#64748b' }, grid: { color: '#1e293b' } },
+                        y: { ticks: { color: '#64748b' }, grid: { color: '#1e293b' } }
+                    }
+                }
+            });
+        }
+
+        function exportCSV() {
+            if (logs.length === 0) {
+                alert("No logs available to export.");
+                return;
+            }
+
+            let csvContent = "data:text/csv;charset=utf-8,Date,Expected USD,Current USD,Difference,Status\r\n";
+            logs.forEach(l => {
+                const diff = (l.current - l.expected).toFixed(2);
+                const status = l.current >= l.expected ? "PROFIT" : "LOSS";
+                csvContent += `${l.date},${l.expected},${l.current},${diff},${status}\r\n`;
+            });
+
+            const encodedUri = encodeURI(csvContent);
+            const link = document.createElement("a");
+            link.setAttribute("href", encodedUri);
+            link.setAttribute("download", "data.csv");
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
+    </script>
+</body>
+</html>

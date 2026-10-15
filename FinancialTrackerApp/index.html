@@ -29,7 +29,15 @@
                 <p class="text-xs text-slate-400">Automated Daily Log & Compound Growth Engine (Syncs to local data.csv)</p>
             </div>
         </div>
+
+        <!-- Navigation and Status -->
         <div class="flex items-center space-x-4 mt-3 sm:mt-0">
+            <!-- Link to Second Page (Analysis) -->
+            <a href="analysis.html" class="flex items-center space-x-2 text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-3 py-1.5 rounded-lg transition font-medium">
+                <i class="fa-solid fa-chart-pie text-emerald-400"></i>
+                <span>Analysis Page</span>
+            </a>
+
             <!-- Sync Status Badge -->
             <div id="syncStatus" class="flex items-center space-x-2 text-xs bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 px-3 py-1.5 rounded-lg">
                 <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
@@ -165,11 +173,11 @@
                         <input type="number" id="calcPrincipal" value="1000" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white font-mono text-sm focus:outline-none focus:border-emerald-500">
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-slate-400 mb-1">Interest Rate per Period (%)</label>
+                        <label class="block text-xs font-medium text-slate-400 mb-1">Interest Rate per Day (%)</label>
                         <input type="number" id="calcRate" value="1.0" step="0.01" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white font-mono text-sm focus:outline-none focus:border-emerald-500">
                     </div>
                     <div>
-                        <label class="block text-xs font-medium text-slate-400 mb-1">Number of Periods (Days)</label>
+                        <label class="block text-xs font-medium text-slate-400 mb-1">Number of Days (Periods)</label>
                         <input type="number" id="calcPeriods" value="30" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2 text-white font-mono text-sm focus:outline-none focus:border-emerald-500">
                     </div>
                     <button onclick="calculateCompound()" class="w-full bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-emerald-500/30 font-bold py-2 px-4 rounded-xl text-sm transition flex items-center justify-center space-x-2">
@@ -227,7 +235,6 @@
 
     <!-- App JavaScript Logic -->
     <script>
-        // Check if running in Electron with Node integration
         let isElectron = false;
         let ipcRenderer = null;
         try {
@@ -238,14 +245,13 @@
             console.log("Running in standard browser mode. Using localStorage.");
         }
 
-        // Live Clock
         setInterval(() => {
             document.getElementById('liveClock').innerText = new Date().toLocaleTimeString();
         }, 1000);
 
         let logs = [];
         let settings = {
-            interestRate: 1.0, // 1% default
+            interestRate: 1.0, // Default daily rate percentage
             startingPrincipal: 1000
         };
 
@@ -254,8 +260,6 @@
         window.addEventListener('DOMContentLoaded', () => {
             const todayStr = new Date().toISOString().split('T')[0];
             document.getElementById('logDate').value = todayStr;
-            
-            // Load initial data
             loadDataFromStorage();
         });
 
@@ -393,42 +397,43 @@
             const firstDayIndex = new Date(year, month, 1).getDay();
             const totalDays = new Date(year, month + 1, 0).getDate();
 
-            // Calculate expected targets using compound interest starting from 1st of month or first log
-            let runningTarget = settings.startingPrincipal;
-            const rateMultiplier = 1 + (settings.interestRate / 100);
+            // PURE DAILY COMPOUND MULTIPLIER (e.g., 1% = 1.01)
+            const dailyMultiplier = 1 + (settings.interestRate / 100);
 
-            // Empty slots for previous month
+            // Empty slots for previous month padding
             for (let i = 0; i < firstDayIndex; i++) {
                 const emptyCell = document.createElement('div');
                 emptyCell.className = "h-20 bg-slate-950/30 rounded-xl border border-slate-900 opacity-30";
                 grid.appendChild(emptyCell);
             }
 
+            // Loop through each day of the month and calculate expected target using formula: Principal * (1 + rate)^(day - 1)
             for (let day = 1; day <= totalDays; day++) {
                 const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-                
-                // Compound calculation for target
                 const existingLog = logs.find(l => l.date === dateStr);
                 
+                // Correct day-by-day compounding expectation formula
+                const expectedTargetForDay = settings.startingPrincipal * Math.pow(dailyMultiplier, day - 1);
+
                 const cell = document.createElement('div');
                 cell.className = "h-24 bg-slate-950 border border-slate-800/80 rounded-xl p-2 flex flex-col justify-between hover:border-emerald-500/50 transition cursor-pointer relative overflow-hidden group";
                 
                 cell.onclick = () => {
                     document.getElementById('logDate').value = dateStr;
-                    document.getElementById('logExpected').value = runningTarget.toFixed(2);
+                    document.getElementById('logExpected').value = expectedTargetForDay.toFixed(2);
                     window.scrollTo({ top: 0, behavior: 'smooth' });
                 };
 
-                let contentHtml = `<div class="flex justify-between items-center text-xs font-bold text-slate-400"><span>${day}</span><span class="text-[9px] text-slate-600 font-mono">Exp: $${runningTarget.toFixed(0)}</span></div>`;
+                let contentHtml = `<div class="flex justify-between items-center text-xs font-bold text-slate-400"><span>${day}</span><span class="text-[9px] text-slate-600 font-mono">Exp: $${expectedTargetForDay.toFixed(2)}</span></div>`;
 
                 if (existingLog) {
-                    const diff = existingLog.current - existingLog.expected;
+                    const diff = existingLog.current - expectedTargetForDay;
                     const isProfit = diff >= 0;
                     cell.classList.add(isProfit ? 'border-emerald-500/40' : 'border-rose-500/40');
                     contentHtml += `
                         <div class="mt-1 font-mono text-[11px]">
-                            <div class="text-slate-200 font-bold">Act: $${existingLog.current.toFixed(1)}</div>
-                            <div class="${isProfit ? 'text-emerald-400' : 'text-rose-400'} text-[10px]">${isProfit ? '+' : ''}$${diff.toFixed(1)}</div>
+                            <div class="text-slate-200 font-bold">Act: $${existingLog.current.toFixed(2)}</div>
+                            <div class="${isProfit ? 'text-emerald-400' : 'text-rose-400'} text-[10px]">${isProfit ? '+' : ''}$${diff.toFixed(2)}</div>
                         </div>
                     `;
                 } else {
@@ -437,9 +442,6 @@
 
                 cell.innerHTML = contentHtml;
                 grid.appendChild(cell);
-
-                // Compound for next day
-                runningTarget *= rateMultiplier;
             }
         }
 
@@ -462,9 +464,9 @@
         function calculateCompound() {
             const P = parseFloat(document.getElementById('calcPrincipal').value) || 0;
             const r = (parseFloat(document.getElementById('calcRate').value) || 0) / 100;
-            const n = parseInt(document.getElementById('calcPeriods').value) || 0;
+            const days = parseInt(document.getElementById('calcPeriods').value) || 0;
 
-            const A = P * Math.pow(1 + r, n);
+            const A = P * Math.pow(1 + r, days);
             const profit = A - P;
 
             document.getElementById('calcFinalValue').innerText = '$' + A.toFixed(2);
