@@ -31,30 +31,12 @@
         </div>
 
         <!-- Navigation and Status -->
-        <div class="flex items-center space-x-3 mt-3 sm:mt-0">
+        <div class="flex items-center space-x-4 mt-3 sm:mt-0">
+            <!-- Link to Second Page (Analysis) -->
             <a href="analysis.html" class="flex items-center space-x-2 text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-3 py-1.5 rounded-lg transition font-medium">
                 <i class="fa-solid fa-chart-pie text-emerald-400"></i>
-                <span>Analysis</span>
+                <span>Analysis Page</span>
             </a>
-            <a href="converter.html" class="flex items-center space-x-2 text-xs bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 px-3 py-1.5 rounded-lg transition font-medium">
-                <i class="fa-solid fa-money-bill-transfer text-emerald-400"></i>
-                <span>Converter</span>
-            </a>
-            <button onclick="triggerRefresh()" class="text-xs bg-slate-800 hover:bg-slate-700 text-slate-300 px-3 py-1.5 rounded-lg transition" title="Refresh Data">
-                <i class="fa-solid fa-rotate"></i>
-            </button>
-            <div id="authNavArea">
-                <button onclick="openDevModal()" id="loginBtn" class="text-xs bg-indigo-600 hover:bg-indigo-500 text-white px-3 py-1.5 rounded-lg transition font-medium">
-                    <i class="fa-solid fa-code mr-1"></i> Dev Portal
-                </button>
-                <button onclick="logoutDev()" id="logoutBtn" class="text-xs bg-rose-600/20 text-rose-400 border border-rose-500/30 hover:bg-rose-600/30 px-3 py-1.5 rounded-lg transition font-medium hidden">
-                    <i class="fa-solid fa-right-from-bracket mr-1"></i> Logout
-                </button>
-            </div>
-            <button onclick="requestAppClose()" class="text-xs bg-rose-600 hover:bg-rose-500 text-white px-3.5 py-1.5 rounded-lg transition font-bold shadow-md flex items-center space-x-1.5" title="Close Application">
-                <i class="fa-solid fa-power-off"></i>
-                <span>Exit</span>
-            </button>
 
             <!-- Sync Status Badge -->
             <div id="syncStatus" class="hidden sm:flex items-center space-x-2 text-xs bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 px-3 py-1.5 rounded-lg ml-2">
@@ -318,9 +300,8 @@
 
         let logs = [];
         let settings = {
-            interestRate: 1.0,
-            startingPrincipal: 1000,
-            startDate: new Date().toISOString().split('T')[0]
+            interestRate: 1.0, // Default daily rate percentage
+            startingPrincipal: 1000
         };
 
         let currentCalendarDate = new Date();
@@ -329,12 +310,6 @@
         window.addEventListener('DOMContentLoaded', () => {
             const todayStr = new Date().toISOString().split('T')[0];
             document.getElementById('logDate').value = todayStr;
-            
-            if (localStorage.getItem('fintrack_dev_auth') === 'true') {
-                document.getElementById('loginBtn').classList.add('hidden');
-                document.getElementById('logoutBtn').classList.remove('hidden');
-            }
-
             loadDataFromStorage();
         });
 
@@ -476,52 +451,25 @@
             const firstDayIndex = new Date(year, month, 1).getDay();
             const totalDays = new Date(year, month + 1, 0).getDate();
 
+            // PURE DAILY COMPOUND MULTIPLIER (e.g., 1% = 1.01)
             const dailyMultiplier = 1 + (settings.interestRate / 100);
-            
-            // Parse custom start date safely (defaults to today if empty)
-            const startDateObj = new Date(settings.startDate || new Date().toISOString().split('T')[0]);
-            // Reset hours to midnight for accurate day difference math
-            startDateObj.setHours(0, 0, 0, 0);
 
+            // Empty slots for previous month padding
             for (let i = 0; i < firstDayIndex; i++) {
                 const emptyCell = document.createElement('div');
                 emptyCell.className = "h-20 bg-slate-950/30 rounded-xl border border-slate-900 opacity-30";
                 grid.appendChild(emptyCell);
             }
 
+            // Loop through each day of the month and calculate expected target using formula: Principal * (1 + rate)^(day - 1)
             for (let day = 1; day <= totalDays; day++) {
-                const currentDateObj = new Date(year, month, day);
-                currentDateObj.setHours(0, 0, 0, 0);
-                
                 const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
                 const existingLog = logs.find(l => l.date === dateStr);
                 
-                // Calculate day difference from custom start date
-                const timeDiff = currentDateObj - startDateObj;
-                const dayOffset = Math.round(timeDiff / (1000 * 60 * 60 * 24));
+                // Correct day-by-day compounding expectation formula
+                const expectedTargetForDay = settings.startingPrincipal * Math.pow(dailyMultiplier, day - 1);
 
-                let expectedTargetForDay = settings.startingPrincipal;
-
-                // FLEXIBLE START DATE LOGIC:
-                if (dayOffset < 0) {
-                    // 1. If the day is BEFORE your chosen start date:
-                    // If a log already exists, KEEP its original expected value so history is never reformatted!
-                    if (existingLog) {
-                        expectedTargetForDay = existingLog.expected;
-                    } else {
-                        expectedTargetForDay = settings.startingPrincipal;
-                    }
-                } else if (dayOffset === 0) {
-                    // 2. On the exact start date:
-                    expectedTargetForDay = settings.startingPrincipal;
-                } else {
-                    // 3. AFTER the start date: Compound forward day by day
-                    expectedTargetForDay = settings.startingPrincipal * Math.pow(dailyMultiplier, dayOffset);
-                }
-
-                const cell = directiveCell = document.createElement('div'); 
-                // (keep your existing cell creation below)
-              
+                const cell = document.createElement('div');
                 cell.className = "h-24 bg-slate-950 border border-slate-800/80 rounded-xl p-2 flex flex-col justify-between hover:border-emerald-500/50 transition cursor-pointer relative overflow-hidden group";
                 
                 cell.onclick = () => {
