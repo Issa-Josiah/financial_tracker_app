@@ -477,7 +477,11 @@
             const totalDays = new Date(year, month + 1, 0).getDate();
 
             const dailyMultiplier = 1 + (settings.interestRate / 100);
-            const startDateObj = new Date(settings.startDate || `${year}-${String(month + 1).padStart(2, '0')}-01`);
+            
+            // Parse custom start date safely (defaults to today if empty)
+            const startDateObj = new Date(settings.startDate || new Date().toISOString().split('T')[0]);
+            // Reset hours to midnight for accurate day difference math
+            startDateObj.setHours(0, 0, 0, 0);
 
             for (let i = 0; i < firstDayIndex; i++) {
                 const emptyCell = document.createElement('div');
@@ -487,19 +491,37 @@
 
             for (let day = 1; day <= totalDays; day++) {
                 const currentDateObj = new Date(year, month, day);
+                currentDateObj.setHours(0, 0, 0, 0);
+                
                 const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
                 const existingLog = logs.find(l => l.date === dateStr);
                 
-                // Calculate precise offset from custom start date
+                // Calculate day difference from custom start date
                 const timeDiff = currentDateObj - startDateObj;
-                const dayOffset = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
+                const dayOffset = Math.round(timeDiff / (1000 * 60 * 60 * 24));
 
                 let expectedTargetForDay = settings.startingPrincipal;
-                if (dayOffset > 0) {
+
+                // FLEXIBLE START DATE LOGIC:
+                if (dayOffset < 0) {
+                    // 1. If the day is BEFORE your chosen start date:
+                    // If a log already exists, KEEP its original expected value so history is never reformatted!
+                    if (existingLog) {
+                        expectedTargetForDay = existingLog.expected;
+                    } else {
+                        expectedTargetForDay = settings.startingPrincipal;
+                    }
+                } else if (dayOffset === 0) {
+                    // 2. On the exact start date:
+                    expectedTargetForDay = settings.startingPrincipal;
+                } else {
+                    // 3. AFTER the start date: Compound forward day by day
                     expectedTargetForDay = settings.startingPrincipal * Math.pow(dailyMultiplier, dayOffset);
                 }
 
-                const cell = document.createElement('div');
+                const cell = directiveCell = document.createElement('div'); 
+                // (keep your existing cell creation below)
+              
                 cell.className = "h-24 bg-slate-950 border border-slate-800/80 rounded-xl p-2 flex flex-col justify-between hover:border-emerald-500/50 transition cursor-pointer relative overflow-hidden group";
                 
                 cell.onclick = () => {
