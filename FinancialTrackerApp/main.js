@@ -56,3 +56,20 @@ ipcMain.handle('save-data', async (event, payload) => {
     return false;
   }
 });
+
+// IPC Handler to toggle/open Developer Console (DevTools)
+ipcMain.on('toggle-dev-tools', (event) => {
+  const win = BrowserWindow.getFocusedWindow();
+  if (win) {
+    if (win.webContents.isDevToolsOpened()) {
+      win.webContents.closeDevTools();
+    } else {
+      win.webContents.openDevTools();
+    }
+  }
+});
+
+// IPC Handler for graceful application shutdown
+ipcMain.on('app-quit', () => {
+  app.quit();
+});
